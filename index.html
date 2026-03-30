@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>DRIFT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+
+        header {
+            background: #6c63ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            letter-spacing: 8px;
+            font-weight: 900;
+        }
+
+        header p {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 0 16px;
+        }
+
+        .cards {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .card p {
+            font-size: 22px;
+            font-weight: bold;
+            color: #6c63ff;
+        }
+
+        .form-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .form-box h2 {
+            margin-bottom: 14px;
+            font-size: 15px;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .form-box input,
+        .form-box select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-box button {
+            width: 100%;
+            padding: 11px;
+            background: #6c63ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .form-box button:hover {
+            background: #574fd6;
+        }
+
+        .list-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .list-box h2 {
+            margin-bottom: 14px;
+            font-size: 15px;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+
+        .expense-item .info {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .expense-item .info span {
+            color: #aaa;
+            font-size: 12px;
+            display: block;
+            font-weight: 400;
+        }
+
+        .expense-item .amount {
+            font-weight: bold;
+            color: #6c63ff;
+        }
+
+        .expense-item button {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 12px;
+        }
+
+        .expense-item button:hover {
+            color: red;
+        }
+
+        .empty {
+            color: #bbb;
+            font-size: 14px;
+            text-align: center;
+            padding: 24px 0;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>DRIFT</h1>
+        <p>track where your money goes</p>
+    </header>
+
+    <div class="container">
+
+        <div class="cards">
+            <div class="card">
+                <h3>Total Spent</h3>
+                <p id="totalSpent">₹0</p>
+            </div>
+            <div class="card">
+                <h3>Expenses</h3>
+                <p id="totalCount">0</p>
+            </div>
+            <div class="card">
+                <h3>Top Category</h3>
+                <p id="topCat">—</p>
+            </div>
+        </div>
+
+        <div class="form-box">
+            <h2>Add Expense</h2>
+            <input type="number" id="amount" placeholder="Amount (₹)" min="1" />
+            <select id="category">
+                <option value="Food">🍔 Food</option>
+                <option value="Transport">🚌 Transport</option>
+                <option value="Books">📚 Books & Fees</option>
+                <option value="Social">🎉 Social Life</option>
+                <option value="Health">💊 Health</option>
+                <option value="Other">✦ Other</option>
+            </select>
+            <input type="text" id="note" placeholder="Note (optional)" />
+            <button onclick="addExpense()">+ Add Expense</button>
+        </div>
+
+        <div class="list-box">
+            <h2>My Expenses</h2>
+            <div id="expenseList">
+                <div class="empty">no expenses yet — add one above</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let expenses = JSON.parse(localStorage.getItem("drift_expenses")) || [];
+
+        renderList();
+        updateSummary();
+
+        function addExpense() {
+            const amount = parseFloat(document.getElementById("amount").value);
+            const category = document.getElementById("category").value;
+            const note = document.getElementById("note").value;
+
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount!");
+                return;
+            }
+
+            expenses.push({ id: Date.now(), amount, category, note });
+            localStorage.setItem("drift_expenses", JSON.stringify(expenses));
+
+            document.getElementById("amount").value = "";
+            document.getElementById("note").value = "";
+
+            renderList();
+            updateSummary();
+        }
+
+        function deleteExpense(id) {
+            expenses = expenses.filter(e => e.id !== id);
+            localStorage.setItem("drift_expenses", JSON.stringify(expenses));
+            renderList();
+            updateSummary();
+        }
+
+        function renderList() {
+            const list = document.getElementById("expenseList");
+
+            if (expenses.length === 0) {
+                list.innerHTML = '<div class="empty">no expenses yet — add one above</div>';
+                return;
+            }
+
+            list.innerHTML = expenses.map(e => `
+        <div class="expense-item">
+          <div class="info">
+            ${e.category}
+            <span>${e.note || "no note"}</span>
+          </div>
+          <div class="amount">₹${e.amount.toFixed(2)}</div>
+          <button onclick="deleteExpense(${e.id})">✕</button>
+        </div>
+      `).join("");
+        }
+
+        function updateSummary() {
+            const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+            document.getElementById("totalSpent").textContent = "₹" + total.toFixed(2);
+            document.getElementById("totalCount").textContent = expenses.length;
+
+            if (expenses.length === 0) {
+                document.getElementById("topCat").textContent = "—";
+                return;
+            }
+
+            const catTotals = {};
+            expenses.forEach(e => {
+                catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+            });
+
+            const top = Object.entries(catTotals).sort((a, b) => b[1] - a[1])[0][0];
+            document.getElementById("topCat").textContent = top;
+        }
+    </script>
+
+</body>
+
+</html>
